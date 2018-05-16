@@ -26,6 +26,7 @@
 #include <BuildInfo.h>
 #include <libethashseal/EthashCPUMiner.h>
 #include <libethereum/Client.h>
+#include <libdevcore/JsonUtils.h>
 
 #include <yaml-cpp/yaml.h>
 #include <boost/algorithm/string/trim.hpp>
@@ -579,29 +580,6 @@ void checkCallCreates(
             _resultCallCreates[i].receiveAddress() == _expectedCallCreates[i].receiveAddress());
         BOOST_CHECK(_resultCallCreates[i].gas() == _expectedCallCreates[i].gas());
         BOOST_CHECK(_resultCallCreates[i].value() == _expectedCallCreates[i].value());
-    }
-}
-
-string jsonTypeAsString(json_spirit::Value_type _type)
-{
-    switch (_type)
-    {
-    case json_spirit::obj_type:
-        return "json Object";
-    case json_spirit::array_type:
-        return "json Array";
-    case json_spirit::str_type:
-        return "json String";
-    case json_spirit::bool_type:
-        return "json Bool";
-    case json_spirit::int_type:
-        return "json Int";
-    case json_spirit::real_type:
-        return "json Real";
-    case json_spirit::null_type:
-        return "json Null";
-    default:
-        return "json n/a";
     }
 }
 

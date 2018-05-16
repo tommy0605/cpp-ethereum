@@ -166,6 +166,46 @@ set<string> const c_knownGenesisFields = {
 };
 }
 
+void validateConfigJson(js::mObject const& _obj)
+{
+    requireJsonFields(_obj, "ChainParams::loadConfig", {
+        {"sealEngine", {json_spirit::str_type} },
+        {"params", {json_spirit::obj_type} },
+        {"genesis", {json_spirit::obj_type} },
+        {"accounts", {json_spirit::obj_type} }
+    });
+
+    requireJsonFields(_obj.at("genesis").get_obj(), "ChainParams::loadConfig", {
+        {"author", {json_spirit::str_type} },
+        {"nonce", {json_spirit::str_type} },
+        {"author", {json_spirit::str_type} },
+        {"gasLimit", {json_spirit::str_type} },
+        {"timestamp", {json_spirit::str_type} },
+        {"difficulty", {json_spirit::str_type} },
+        {"extraData", {json_spirit::str_type} }
+        }, {"mixHash", "parentHash"});
+
+    js::mObject const& accounts = _obj.at("accounts").get_obj();
+    for (auto const& acc: accounts)
+    {
+        js::mObject const& account = acc.second.get_obj();
+        if (account.count("precompiled"))
+        {
+            requireJsonFields(account, "ChainParams::loadConfig", {
+                {"precompiled", {json_spirit::obj_type} }},
+                {"wei"}
+            );
+        }
+        else
+        {
+            requireJsonFields(account, "ChainParams::loadConfig", {
+                {"balance", {json_spirit::str_type} }},
+                { "code", "nonce", "storage" }
+            );
+        }
+    }
+}
+
 ChainParams ChainParams::loadGenesis(string const& _json, h256 const& _stateRoot) const
 {
 	ChainParams cp(*this);
@@ -174,6 +214,7 @@ ChainParams ChainParams::loadGenesis(string const& _json, h256 const& _stateRoot
 	json_spirit::read_string(_json, val);
 	js::mObject genesis = val.get_obj();
 
+    validateConfigJson(genesis);
 	validateFieldNames(genesis, c_knownGenesisFields);
 
 	cp.parentHash = h256(genesis[c_parentHash].get_str());
